@@ -1,0 +1,75 @@
+[{
+  "_id": {
+    "$oid": "66f0d9b9a904c6c2976db1a0"
+  },
+  "bookingId": "WEDIUM001",
+  "otp": "3710",
+  "uid": "66b0e44d46de6c9f6e30f6a8",
+  "firstName": "Adi",
+  "lastName": "das",
+  "bookingTime": "08:40",
+  "bookingDate": {
+    "$date": "2024-09-23T08:29:32.425Z"
+  },
+  "notes": "this is a test",
+  "products": [
+    {
+      "productId": {
+        "$oid": "6560d46e6c47e541d464afed"
+      },
+      "name": "HD Bridal Makeup",
+      "price": 11999,
+      "quantity": 1,
+      "discount": 0,
+      "discountPercentage": 10,
+      "_id": {
+        "$oid": "66f0d9b9a904c6c2976db1a1"
+      }
+    }
+  ],
+  "coupon": {
+    "_id": {
+      "$oid": "66e30941dbbaead9885b05ed"
+    },
+    "code": "SWAPNIL30",
+    "description": "ece",
+    "discount": 20,
+    "discountType": "PERCENTAGE",
+    "minimumAmount": 1000,
+    "expiryDate": {
+      "$date": "2024-09-24T00:00:00.000Z"
+    },
+    "type": "GENERAL"
+  },
+  "address": {
+    "firstName": "Adi",
+    "lastName": "das",
+    "street": "B/20,  Satellite",
+    "city": "Ahmadabad City",
+    "state": "Gujarat",
+    "district": "Ahmedabad",
+    "postalCode": "380015",
+    "country": "IN",
+    "phoneNumber": "918260625276",
+    "latitude": 23.031021,
+    "longitude": 72.5125976,
+    "optionalPhoneNumber": "918260625276"
+  },
+  "status": "CONFIRMED",
+  "bookingAmount": {
+    "totalProductPrice": 10799.1,
+    "couponDiscount": 2159.82,
+    "finalAmount": 8639.28,
+    "originalTotalPrice": 11999
+  },
+  "otpGeneratedAt": {
+    "$date": "2024-09-23T03:00:09.671Z"
+  },
+  "createdAt": {
+    "$date": "2024-09-23T03:00:09.673Z"
+  },
+  "updatedAt": {
+    "$date": "2024-09-23T03:00:09.673Z"
+  },
+  "__v": 0
+}]
