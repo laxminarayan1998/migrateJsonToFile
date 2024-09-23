@@ -1,20 +1,17 @@
 import json
 from datetime import datetime
-import random
-import string
 
 try:
     from bson import ObjectId
-    from bson.json_util import dumps, loads, RELAXED_JSON_OPTIONS
+    from bson.json_util import dumps, RELAXED_JSON_OPTIONS
 except ImportError:
     print("Error: bson module not found. Please install pymongo by running: pip install pymongo")
     exit(1)
 
-def generate_random_id():
-    return ObjectId()
-
+# Function to migrate bookings
 def migrate_bookings(old_bookings):
     new_bookings = []
+    profiles = {}
     booking_id_counter = 1
 
     for old_booking in old_bookings:
@@ -23,13 +20,34 @@ def migrate_bookings(old_bookings):
         last_name = name_parts[-1] if len(name_parts) > 1 else "NA"
 
         phone_number = ''.join(filter(str.isdigit, old_booking["phone"]))
-        phone_number = f"91{phone_number[-10:]}"
+        
+        # Check if the number length is 10 and prepend 91 if necessary
+        if len(phone_number) == 10:
+            phone_number_with_code = f"91{phone_number}"
+        else:
+            phone_number_with_code = phone_number  # Use the existing number
+
+        # Create profile if it doesn't exist
+        if phone_number_with_code not in profiles:
+            uid = ObjectId()  # Use ObjectId as uid
+            profiles[phone_number_with_code] = {
+                "_id": uid,
+                "uid": str(uid),  # Convert ObjectId to string for consistency
+                "fullName": first_name + " " + last_name,
+                "email": old_booking.get("email", ""),
+                "phoneNumber": int(phone_number_with_code),  # Store as an integer
+                "profileImage": old_booking.get("profileImage", ""),
+                "coverImage": old_booking.get("coverImage", ""),
+                "fcmToken": old_booking.get("fcmToken", ""),
+                "status": "active",
+                "updatedAt": datetime.utcnow()
+            }
 
         new_booking = {
-            "_id": ObjectId(old_booking["_id"]["$oid"]),
+            "_id": ObjectId(),  # Use uid from the profile
             "bookingId": f"WEDIUM{str(booking_id_counter).zfill(3)}",
             "otp": old_booking["otp"],
-            "uid": str(generate_random_id()),
+            "uid": profiles[phone_number_with_code]["uid"],  # Use the uid from the profile
             "firstName": first_name,
             "lastName": last_name,
             "bookingTime": old_booking["bookingTime"],
@@ -42,7 +60,7 @@ def migrate_bookings(old_bookings):
                     "quantity": 1,
                     "discount": 0,
                     "discountPercentage": 0,
-                    "_id": generate_random_id()
+                    "_id": ObjectId()
                 }
             ],
             "address": {
@@ -54,8 +72,8 @@ def migrate_bookings(old_bookings):
                 "district": "NA",
                 "postalCode": "0",
                 "country": "IN",
-                "phoneNumber": phone_number,
-                "optionalPhoneNumber": phone_number
+                "phoneNumber": phone_number_with_code,  # Store formatted phone number
+                "optionalPhoneNumber": phone_number_with_code
             },
             "status": old_booking["orderStatus"],
             "bookingAmount": {
@@ -78,20 +96,25 @@ def migrate_bookings(old_bookings):
         new_bookings.append(new_booking)
         booking_id_counter += 1
 
-    return new_bookings
+    return new_bookings, list(profiles.values())
 
 # Load the JSON data
 input_file_path = 'test.orders.json'
 output_file_path = 'products.json'
+profiles_output_path = 'profiles.json'
 
 with open(input_file_path, 'r') as file:
     old_bookings = json.load(file)
 
-# Migrate the bookings
-migrated_bookings = migrate_bookings(old_bookings)
+# Migrate the bookings and create profiles
+migrated_bookings, new_profiles = migrate_bookings(old_bookings)
 
-# Save the migrated data to a new JSON file using bson.json_util
+# Save the migrated data to a new JSON file for bookings
 with open(output_file_path, 'w') as file:
     file.write(dumps(migrated_bookings, indent=2, json_options=RELAXED_JSON_OPTIONS))
 
-print(f"Migration completed. Migrated data saved to {output_file_path}")
+# Save the newly created profiles to a new JSON file
+with open(profiles_output_path, 'w') as file:
+    file.write(dumps(new_profiles, indent=2, json_options=RELAXED_JSON_OPTIONS))
+
+print(f"Migration completed. Migrated data saved to {output_file_path} and profiles saved to {profiles_output_path}")
